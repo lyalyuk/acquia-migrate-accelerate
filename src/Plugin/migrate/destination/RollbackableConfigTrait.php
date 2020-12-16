@@ -2,7 +2,7 @@
 
 namespace Drupal\acquia_migrate\Plugin\migrate\destination;
 
-use Drupal\Core\Config\Config;
+use Drupal\Core\Config\ConfigBase;
 
 /**
  * Trait for rollbackable config-like destination plugins.
@@ -18,14 +18,13 @@ trait RollbackableConfigTrait {
    * all of its related migrations were rolled back. We store this info in a
    * 'new' flag table.
    *
-   * @param \Drupal\Core\Config\Config $config
+   * @param \Drupal\Core\Config\ConfigBase $config
    *   The configuration.
    * @param string $langcode
    *   The language code. Optional, defaults to ''.
    *
-   * @throws \Exception
    */
-  protected function flagConfigAsNew(Config $config, string $langcode = '') {
+  protected function flagConfigAsNew(ConfigBase $config, string $langcode = '') {
     if (!$this->configHasNewFlag($config, $langcode)) {
       $this->connection->insert(static::ROLLBACK_STATE_TABLE)
         ->fields([
@@ -39,7 +38,7 @@ trait RollbackableConfigTrait {
   /**
    * Determines whether the config was marked as new during any migration.
    *
-   * @param \Drupal\Core\Config\Config $config
+   * @param \Drupal\Core\Config\ConfigBase $config
    *   The configuration.
    * @param string $langcode
    *   The language code. Optional, defaults to ''.
@@ -48,7 +47,7 @@ trait RollbackableConfigTrait {
    *   TRUE if the config was created by a rollbackable config migration, FALSE
    *   if not.
    */
-  protected function configHasNewFlag(Config $config, string $langcode = '') : bool {
+  protected function configHasNewFlag(ConfigBase $config, string $langcode = '') : bool {
     $count_query = $this->connection->select(static::ROLLBACK_STATE_TABLE)
       ->condition(static::ROLLBACK_CONFIG_ID_COL, $config->getName())
       ->condition(static::ROLLBACK_CONFIG_LANGCODE_COL, $langcode)
@@ -59,14 +58,13 @@ trait RollbackableConfigTrait {
   /**
    * Removes the new flag from a config.
    *
-   * @param \Drupal\Core\Config\Config $config
+   * @param \Drupal\Core\Config\ConfigBase $config
    *   The configuration.
    * @param string $langcode
    *   The language code. Optional, defaults to ''.
    *
-   * @throws \Exception
    */
-  protected function removeNewConfigFlag(Config $config, string $langcode = '') {
+  protected function removeNewConfigFlag(ConfigBase $config, string $langcode = '') {
     $this->connection->delete(static::ROLLBACK_STATE_TABLE)
       ->condition(static::ROLLBACK_CONFIG_ID_COL, $config->getName())
       ->condition(static::ROLLBACK_CONFIG_LANGCODE_COL, $langcode)
@@ -76,16 +74,15 @@ trait RollbackableConfigTrait {
   /**
    * Saves rollback data.
    *
-   * @param \Drupal\Core\Config\Config $config
+   * @param \Drupal\Core\Config\ConfigBase $config
    *   The configuration.
    * @param null|array $data
    *   The data to save.
    * @param string $langcode
    *   The language code. Optional, defaults to ''.
    *
-   * @throws \Exception
    */
-  protected function saveRollbackData(Config $config, $data, string $langcode = '') {
+  protected function saveRollbackData(ConfigBase $config, $data, string $langcode = '') {
     if (!$this->rollbackDataExists($config, $langcode)) {
       $this->connection->insert(RollbackableInterface::ROLLBACK_DATA_TABLE)
         ->fields([
@@ -114,7 +111,7 @@ trait RollbackableConfigTrait {
   /**
    * Determines whether the display has rollback data for a given field.
    *
-   * @param \Drupal\Core\Config\Config $config
+   * @param \Drupal\Core\Config\ConfigBase $config
    *   The configuration.
    * @param string $langcode
    *   The language code. Optional, defaults to ''.
@@ -122,7 +119,7 @@ trait RollbackableConfigTrait {
    * @return bool
    *   TRUE if some rollback data exists, FALSE if not.
    */
-  protected function rollbackDataExists(Config $config, string $langcode = '') : bool {
+  protected function rollbackDataExists(ConfigBase $config, string $langcode = '') : bool {
     $count_query = $this->connection->select(RollbackableInterface::ROLLBACK_DATA_TABLE)
       ->condition(RollbackableInterface::ROLLBACK_MIGRATION_PLUGIN_ID_COL, $this->migration->getPluginId())
       ->condition(RollbackableInterface::ROLLBACK_CONFIG_ID_COL, $config->getName())
@@ -135,7 +132,7 @@ trait RollbackableConfigTrait {
   /**
    * Returns the rollback data for a given config.
    *
-   * @param \Drupal\Core\Config\Config $config
+   * @param \Drupal\Core\Config\ConfigBase $config
    *   The configuration.
    * @param string $langcode
    *   The language code. Optional, defaults to ''.
@@ -144,7 +141,7 @@ trait RollbackableConfigTrait {
    *   The rollback data stored by the current migration plugin (this may be an
    *   empty array).
    */
-  protected function getRollbackData(Config $config, string $langcode = '') : array {
+  protected function getRollbackData(ConfigBase $config, string $langcode = '') : array {
     $statement = $this->connection->select(RollbackableInterface::ROLLBACK_DATA_TABLE, 'crd')
       ->fields('crd', [
         RollbackableInterface::ROLLBACK_MIGRATION_PLUGIN_ID_COL,
@@ -167,12 +164,12 @@ trait RollbackableConfigTrait {
   /**
    * Deletes the rollback data of the given config, for the current migration.
    *
-   * @param \Drupal\Core\Config\Config $config
+   * @param \Drupal\Core\Config\ConfigBase $config
    *   The configuration.
    * @param string $langcode
    *   The language code. Optional, defaults to ''.
    */
-  protected function deleteRollbackData(Config $config, string $langcode = '') {
+  protected function deleteRollbackData(ConfigBase $config, string $langcode = '') {
     $this->connection->delete(RollbackableInterface::ROLLBACK_DATA_TABLE)
       ->condition(RollbackableInterface::ROLLBACK_MIGRATION_PLUGIN_ID_COL, $this->migration->getPluginId())
       ->condition(RollbackableInterface::ROLLBACK_CONFIG_ID_COL, $config->getName())
@@ -186,12 +183,14 @@ trait RollbackableConfigTrait {
    * Useful if the config was deleted before rolling back any of the related
    * migrations.
    *
-   * @param \Drupal\Core\Config\Config $config
+   * @param \Drupal\Core\Config\ConfigBase $config
    *   The configuration.
    * @param string $langcode
    *   The language code. Optional, defaults to ''.
+   *
+   * @throws \Exception
    */
-  protected function cleanUpLeftovers(Config $config, string $langcode = '') {
+  protected function cleanUpLeftovers(ConfigBase $config, string $langcode = '') {
     if ($this->rollbackDataExists($config, $langcode)) {
       $this->deleteRollbackData($config, $langcode);
     }
@@ -202,12 +201,12 @@ trait RollbackableConfigTrait {
   /**
    * Performs the data rollback for a config.
    *
-   * @param \Drupal\Core\Config\Config $config
+   * @param \Drupal\Core\Config\ConfigBase $config
    *   The configuration.
    * @param string $langcode
    *   The language code. Optional, defaults to ''.
    */
-  protected function performConfigRollback(Config $config, string $langcode = '') {
+  protected function performConfigRollback(ConfigBase $config, string $langcode = '') {
     if ($this->rollbackDataExists($config, $langcode)) {
       $rollback_data = $this->getRollbackData($config, $langcode);
 
@@ -234,12 +233,14 @@ trait RollbackableConfigTrait {
    * Deletes the given config if it was created by a rollbackable migration and
    * removes the related 'new' flag.
    *
-   * @param \Drupal\Core\Config\Config $config
+   * @param \Drupal\Core\Config\ConfigBase $config
    *   The configuration.
    * @param string $langcode
    *   The language code. Optional, defaults to ''.
+   *
+   * @throws \Exception
    */
-  protected function performPostRollbackCleanup(Config $config, string $langcode = '') {
+  protected function performPostRollbackCleanup(ConfigBase $config, string $langcode = '') {
     if (!$this->rollbackDataExists($config, $langcode) && $this->configHasNewFlag($config, $langcode)) {
       $config->delete();
 

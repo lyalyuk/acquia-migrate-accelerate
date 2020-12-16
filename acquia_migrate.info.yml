@@ -1,10 +1,8 @@
 name: "Acquia Migrate: Accelerate"
 description: An enhanced UI and assistant for Drupal migrations
 package: Migration
-
 type: module
-core_version_requirement: ^9.0.6
-
+core_version_requirement: ^8.8
 dependencies:
   - drupal:migrate
   - drupal:migrate_drupal

@@ -4,6 +4,7 @@ namespace Drupal\acquia_migrate\Exception;
 
 use Drupal\Core\EventSubscriber\HttpExceptionSubscriberBase;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 
 /**
  * Handles Acquia Migrate API exceptions.
@@ -22,8 +23,9 @@ final class AcquiaMigrateApiExceptionSubscriber extends HttpExceptionSubscriberB
   /**
    * {@inheritdoc}
    */
-  public function onException(ExceptionEvent $event) {
-    $throwable = $event->getThrowable();
+  public function onException(GetResponseForExceptionEvent $event) {
+    // ToDo. add polyfill or rewrite
+    $throwable = $event->getException();
     if ($throwable instanceof AcquiaMigrateHttpExceptionInterface) {
       $event->setResponse($throwable->getHttpResponse());
     }

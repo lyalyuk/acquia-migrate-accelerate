@@ -610,8 +610,9 @@ class MigrationRepository {
           // other blocking high-impact migration. It's possible that that
           // lowest one is insufficiently weighted yet: in that case fall back
           // to running just before the migration.
-          $pulled_weight = min($other_unblocking_migrations_weights) > $weight
-            ? min($other_unblocking_migrations_weights) + 100
+          $minWeight = empty($other_unblocking_migrations_weights) ? -10 : min($other_unblocking_migrations_weights);
+          $pulled_weight = $minWeight > $weight
+            ? $minWeight + 100
             : $weight + 100;
           $weights[$dep] = $pulled_weight;
           assert($weight < $weights[$dep]);

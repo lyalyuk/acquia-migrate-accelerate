@@ -59,7 +59,7 @@ function acquia_migrate_install($is_syncing) {
 /**
  * Implements hook_uninstall().
  */
-function acquia_migrate_uninstall($is_syncing) {
+function acquia_migrate_uninstall($is_syncing = false) {
   // Drop all AM:A tables that are not defined in hook_schema() and hence not
   // automatically created and dropped.
   // @see acquia_migrate_schema()

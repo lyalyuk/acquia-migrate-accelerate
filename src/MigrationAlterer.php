@@ -758,10 +758,13 @@ final class MigrationAlterer {
 
     foreach ($migrations as $migration_id => $migration_data) {
       $base_plugin_id = $migration_data['id'];
-      if (!in_array($base_plugin_id, self::FIELD_MIGRATION_PLUGIN_IDS, TRUE)) {
+      if (
+        !in_array($base_plugin_id, self::FIELD_MIGRATION_PLUGIN_IDS, TRUE)
+        || empty($migration_data['source'])
+        || empty($migration_data['source']['entity_type'])
+      ) {
         continue;
       }
-
       $source_entity_type_id = $migration_data['source']['entity_type'];
       $destination_entity_type_id = isset(self::ENTITY_TYPE_KNOWN_REMAP[$source_entity_type_id])
         ? self::ENTITY_TYPE_KNOWN_REMAP[$source_entity_type_id]

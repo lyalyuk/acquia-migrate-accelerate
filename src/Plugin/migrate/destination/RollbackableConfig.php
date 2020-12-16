@@ -105,7 +105,9 @@ final class RollbackableConfig extends Config implements RollbackableInterface {
         $config_key_first_level = explode(Row::PROPERTY_SEPARATOR, $key)[0];
 
         if (!array_key_exists($config_key_first_level, $previous_values)) {
-          $previous_values[$config_key_first_level] = $this->config->getOriginal($config_key_first_level, FALSE);
+          if (method_exists($this->config, "getOriginal")) {
+            $previous_values[$config_key_first_level] = $this->config->getOriginal($config_key_first_level, FALSE);
+          }
         }
       }
     }

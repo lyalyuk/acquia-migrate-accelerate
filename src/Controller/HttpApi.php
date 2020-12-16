@@ -599,6 +599,7 @@ final class HttpApi {
       $source_only_fields = $this->migrationMappingViewer->getSourceOnlyFields($mapped_source_columns, $data_migration_plugin);
     }
     catch (\InvalidArgumentException $e) {
+
       return JsonResponse::create([
         'errors' => [
           [

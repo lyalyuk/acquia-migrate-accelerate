@@ -204,7 +204,11 @@ final class MigrationMappingViewer {
       ->range(0, 1)
       ->execute()
       ->fetchAll();
-    $first_source_row = reset($first_source_row);
+
+    if (count($first_source_row)) {
+      $first_source_row = reset($first_source_row);
+    }
+
 
     // Prepare the first source row; this causes configurable fields to be added
     // to it.

@@ -49,6 +49,7 @@ class DataProvider implements DataProviderInterface {
    *   The config.factory service.
    */
   public function __construct(string $tracking_api_key, ModuleHandlerInterface $module_handler, ConfigFactoryInterface $config_factory) {
+    // ToDo. Avoid acquia connection.
     $this->key = $tracking_api_key !== '' ? $tracking_api_key : getenv('AH_AMPLITUDE_MIGRATE_KEY');
     if (!$this->key && !file_exists(__DIR__ . '/../../.git')) {
       // Assign the beta API key.
